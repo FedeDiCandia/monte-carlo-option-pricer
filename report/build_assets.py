@@ -13,6 +13,7 @@ Output: report/figures/*.svg e report/results.json (numeri già formattati come 
 """
 
 import json
+import logging
 import platform
 import sys
 from pathlib import Path
@@ -80,6 +81,9 @@ def sci(x: float) -> str:
 # ---------------------------------------------------------------------------
 
 def setup_style() -> None:
+    # Su macOS matplotlib, la prima volta, scorre i font di sistema e segnala quelli con metadati
+    # strani ("Apple Chancery"): è un avviso innocuo che confonde e basta
+    logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
     apply_style()
     for font_file in (REPORT_DIR / "fonts").glob("*.ttf"):
         font_manager.fontManager.addfont(str(font_file))
@@ -101,11 +105,15 @@ def setup_style() -> None:
         "lines.markersize": 3.5,
         # SVG con il testo convertito in tracciati: il report non dipende dai font installati
         "svg.fonttype": "path",
+        # Seme fisso per gli identificatori interni dell'SVG: senza, ogni esecuzione
+        # produrrebbe file diversi pur con lo stesso contenuto
+        "svg.hashsalt": "option-pricer",
     })
 
 
 def save(fig, name: str) -> None:
-    fig.savefig(FIG_DIR / f"{name}.svg", bbox_inches="tight", pad_inches=0.02)
+    # metadata={"Date": None}: senza, ogni SVG conterrebbe la data e risulterebbe modificato a ogni esecuzione
+    fig.savefig(FIG_DIR / f"{name}.svg", bbox_inches="tight", pad_inches=0.02, metadata={"Date": None})
     plt.close(fig)
 
 
@@ -447,8 +455,12 @@ def main() -> None:
     exotics(results)
     greeks(results)
     results["exotics"]["parity_gap"] = "0" if results["exotics"]["parity_gap"] == 0 else sci(results["exotics"]["parity_gap"])
-    (REPORT_DIR / "results.json").write_text(json.dumps(results, indent=2, ensure_ascii=False) + "\n")
-    print(json.dumps(results, indent=2, ensure_ascii=False))
+    output = REPORT_DIR / "results.json"
+    output.write_text(json.dumps(results, indent=2, ensure_ascii=False) + "\n")
+    figures = sorted(f.name for f in FIG_DIR.glob("*.svg"))
+    print(f"Figure scritte in {FIG_DIR.relative_to(ROOT)}: {', '.join(figures)}")
+    print(f"Numeri scritti in {output.relative_to(ROOT)} (li legge report.typ quando si compila il PDF).")
+    print("Ora: typst compile --root . report/report.typ report/option_pricer_report.pdf")
 
 
 if __name__ == "__main__":
