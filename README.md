@@ -45,7 +45,7 @@ Step-by-step presentations of the same material (in Italian). They open on Googl
 ```bash
 git clone https://github.com/FedeDiCandia/monte-carlo-option-pricer.git
 cd monte-carlo-option-pricer
-pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 ```
 
 ```python
@@ -79,7 +79,7 @@ The pricing engine never inspects the type of contract: models describe how the 
 Every number and figure in the report is generated from the package with fixed random seeds:
 
 ```bash
-python report/build_assets.py
+python3 report/build_assets.py
 typst compile --root . report/report.typ report/option_pricer_report.pdf
 ```
 

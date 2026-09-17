@@ -6,7 +6,7 @@ questo script a partire dal package option_pricer. Rieseguendo lo script si otte
 esattamente gli stessi valori (tutti i semi casuali sono fissati).
 
 Uso, dalla cartella principale del progetto:
-    python report/build_assets.py
+    python3 report/build_assets.py
     typst compile --root . report/report.typ report/option_pricer_report.pdf
 
 Output: report/figures/*.svg e report/results.json (numeri già formattati come testo).
